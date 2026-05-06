@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // --- Users ---
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isSignedIn() && isOwner(userId) && (request.resource.data.role == 'student' || request.resource.data.role == 'admin');
+      allow update: if (isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])) || isAdmin();
+    }
+
+    // --- Rooms ---
+    match /rooms/{roomId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // --- Students ---
+    match /students/{studentId} {
+      allow read: if isOwner(get(/databases/$(database)/documents/students/$(studentId)).data.userId) || isAdmin();
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if (isOwner(resource.data.userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'phone', 'photoURL'])) || isAdmin();
+      allow create, delete: if isAdmin();
+    }
+
+    // --- Fees ---
+    match /fees/{feeId} {
+      allow read: if isOwner(get(/databases/$(database)/documents/students/$(resource.data.studentId)).data.userId) || isAdmin();
+      allow list: if isSignedIn() && (get(/databases/$(database)/documents/students/$(resource.data.studentId)).data.userId == request.auth.uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // --- Complaints ---
+    match /complaints/{complaintId} {
+      allow read: if isOwner(get(/databases/$(database)/documents/students/$(resource.data.studentId)).data.userId) || isAdmin();
+      allow list: if isSignedIn() && (get(/databases/$(database)/documents/students/$(resource.data.studentId)).data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && isOwner(get(/databases/$(database)/documents/students/$(request.resource.data.studentId)).data.userId);
+      allow update: if isAdmin() || (isOwner(get(/databases/$(database)/documents/students/$(resource.data.studentId)).data.userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['description']));
+    }
+
+    // --- Visitors ---
+    match /visitors/{visitorId} {
+      allow read: if isOwner(get(/databases/$(database)/documents/students/$(resource.data.studentId)).data.userId) || isAdmin();
+      allow list: if isSignedIn() && (get(/databases/$(database)/documents/students/$(resource.data.studentId)).data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && (isOwner(get(/databases/$(database)/documents/students/$(request.resource.data.studentId)).data.userId) || isAdmin());
+      allow update: if isAdmin();
+    }
+  }
+}

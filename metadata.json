@@ -1,0 +1,6 @@
+{
+  "name": "HostelMaster Pro",
+  "description": "A comprehensive hostel management system with admin and student portals for room allocation, fee management, complaints, and visitor logging.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

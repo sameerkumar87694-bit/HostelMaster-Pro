@@ -1,0 +1,125 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a user in the system (Admin or Student)",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "student"] },
+        "name": { "type": "string" }
+      },
+      "required": ["uid", "email", "role", "name"]
+    },
+    "Room": {
+      "title": "Room",
+      "description": "A room in the hostel",
+      "type": "object",
+      "properties": {
+        "roomNumber": { "type": "string" },
+        "type": { "type": "string" },
+        "capacity": { "type": "number" },
+        "occupiedCount": { "type": "number" },
+        "status": { "type": "string", "enum": ["available", "full", "maintenance"] }
+      },
+      "required": ["roomNumber", "type", "capacity", "occupiedCount", "status"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Detailed student record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "gender": { "type": "string", "enum": ["male", "female", "other"] },
+        "roomId": { "type": "string" },
+        "joiningDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "email", "phone", "gender", "joiningDate"]
+    },
+    "Fee": {
+      "title": "Fee",
+      "description": "Fee record for a student",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "amount": { "type": "number" },
+        "dueDate": { "type": "string", "format": "date-time" },
+        "paidDate": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "paid"] }
+      },
+      "required": ["studentId", "amount", "dueDate", "status"]
+    },
+    "Complaint": {
+      "title": "Complaint",
+      "description": "A complaint registered by a student",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "in-progress", "resolved"] },
+        "submittedDate": { "type": "string", "format": "date-time" },
+        "resolvedDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentId", "description", "status", "submittedDate"]
+    },
+    "Visitor": {
+      "title": "Visitor",
+      "description": "A visitor entry log",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "visitorName": { "type": "string" },
+        "purpose": { "type": "string" },
+        "visitDate": { "type": "string", "format": "date" },
+        "checkIn": { "type": "string", "format": "date-time" },
+        "checkOut": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentId", "visitorName", "purpose", "visitDate", "checkIn"]
+    },
+    "HostelSettings": {
+      "title": "Hostel Settings",
+      "description": "Global settings for the hostel like default fees",
+      "type": "object",
+      "properties": {
+        "maleFee": { "type": "number" },
+        "femaleFee": { "type": "number" },
+        "otherFee": { "type": "number" }
+      },
+      "required": ["maleFee", "femaleFee", "otherFee"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and roles"
+    },
+    "/rooms/{roomId}": {
+      "schema": "Room",
+      "description": "Hostel rooms"
+    },
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Student details"
+    },
+    "/fees/{feeId}": {
+      "schema": "Fee",
+      "description": "Fee history and status"
+    },
+    "/complaints/{complaintId}": {
+      "schema": "Complaint",
+      "description": "Complaint records"
+    },
+    "/visitors/{visitorId}": {
+      "schema": "Visitor",
+      "description": "Visitor logs"
+    },
+    "/settings/{settingsId}": {
+      "schema": "HostelSettings",
+      "description": "Global application settings"
+    }
+  }
+}
